@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Radio, Users, Copy, Check, X } from 'lucide-react'
+import { useRouter } from "next/router"
+import { useSession } from "next-auth/react"
 
 export default function JoinStream() {
+  const router = useRouter()
+  const session = useSession()
   const [streamId, setStreamId] = useState("")
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -52,6 +56,11 @@ export default function JoinStream() {
         stream.title.toLowerCase().includes(lowercasedInput)
     )
   }, [streamId, liveStreams])
+
+  if(!session.data?.user){
+    router.push('/')
+    return;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 py-8 ">

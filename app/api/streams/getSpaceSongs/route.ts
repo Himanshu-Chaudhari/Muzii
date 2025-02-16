@@ -8,7 +8,14 @@ export async function GET(req: NextRequest) {
         const streams = await db.stream.findMany({
             where:{
                 spaceId : streamId ? streamId : ""
-            }
+            },
+            include:{
+                _count:{
+                    select:{
+                        upvotes : true
+                    }
+                }
+            }    
         })
         if(streams == null){
             return NextResponse.json({

@@ -8,7 +8,9 @@ import { Radio, Play, Users } from "lucide-react"
 import axios from "axios"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+
 export default function CreateStream() {
+
   const router = useRouter();
   const [spaceTitle, setStreamTitle] = useState("");
   const { data: session } = useSession();
@@ -24,7 +26,6 @@ export default function CreateStream() {
   const userEmail = session?.user?.email;
   //@ts-ignore
   const userId = session?.user.id;
-  // console.log(userEmail, userId)
 
   const handleCreateSpace = async () => {
     if (spaceTitle === "") {
@@ -32,7 +33,6 @@ export default function CreateStream() {
       return;
     }
     console.log("This is what i want to print :-",userId , spaceTitle)
-    // console.log("Creating stream:", spaceTitle);
     const response = await axios.post("/api/streams/createSpace", {
       creator: userId,
       spaceName: spaceTitle,
@@ -60,9 +60,12 @@ export default function CreateStream() {
       alert("Other Space is Live Pause It to start new one");
       return;
     }
+
+    console.log(response.data);
+
     if (response.status === 200) {
       alert("Space Re-Started");
-      router.push("/dashboard/mySpace");
+      router.push(`/dashboard/mySpace?id=${response.data.streamId}`);
     }
   }
 
@@ -70,26 +73,29 @@ export default function CreateStream() {
     if (alertShownRef.current == true)
       return;
     const response = await axios.get("/api/streams/getLiveSpace");
+    console.log(response.data)
     if (response.status === 200) {
       alertShownRef.current = true;
-      alert("Please end the previous space to start a new one");
-      router.push("/dashboard/mySpace");
+      console.log(response.data)
+      router.push(`/dashboard/mySpace?id=${response.data.stream.id}`);
     }
   };
 
   const getAllStreams = async function () {
-    // console.log(userEmail)
     const response = await axios.get(`/api/streams/mySpaces?creatorId=himanshuchaudhari8561@gmail.com`);
     setPreviousSpaces(response.data.space)
   }
 
   useEffect(() => {
     checkIfStreamIsLive();
-    const interval = setInterval(() => {
-      getAllStreams()
-    }, 3000);
-    return () => clearInterval(interval);
+    getAllStreams()
   }, []);
+
+  if(!session){
+    return (<div>
+      Session Expired !
+    </div>)
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 py-8">
@@ -149,7 +155,7 @@ export default function CreateStream() {
                       size="sm"
                       className="text-emerald-500 border-emerald-500 hover:bg-emerald-500 hover:text-white"
                     >
-                      <Play className="h-4 w-4 mr-1" /> Replay
+                      <Play className="h-4 w-4 mr-1" /> 
                     </Button>
                   </div>
                 </div>
