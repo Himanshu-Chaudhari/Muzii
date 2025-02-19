@@ -5,7 +5,7 @@ import { SkipForward, Plus, Trash2, LogOut } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react";
-import { addSongToStream, findActiveStream, stopStreamingStream } from "../lib/myStreamFunctions";
+import { addSongToStream, findActiveStream, handleRemoveSong, stopStreamingStream } from "../lib/myStreamFunctions";
 import { LiveSpace, StreamQueue } from "../lib/interfaces";
 import YouTubePlayer from 'youtube-player';
 
@@ -26,24 +26,16 @@ export default function MyStream() {
     if (!videoPlayerRef.current || !currentSong) {
       return;
     }
-
     let player = YouTubePlayer(videoPlayerRef.current);
-    
-    // Load and play the video
     player.loadVideoById(currentSong.extractedId);
     player.playVideo();
-
-    // Handle video end
     function eventHandler(event: any) {
       console.log('Player state:', event.data);
-      if (event.data === 0) {  // Video ended
+      if (event.data === 0) { 
         handlePlayNext();
       }
     }
-
     player.on("stateChange", eventHandler);
-
-    // Cleanup
     return () => {
       player.destroy();
     };
@@ -52,18 +44,15 @@ export default function MyStream() {
   const handlePlayNext = async () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-
     try {
       if (!streamQueue || streamQueue.length === 0) {
         setCurrentSong(undefined);
         return;
       }
-
       const nextQueue = [...streamQueue];
       const nextSong = nextQueue.shift();
       
       if (!nextSong) return;
-
       setCurrentSong(nextSong);
       setStreamQueue(nextQueue);
     } finally {
@@ -71,14 +60,12 @@ export default function MyStream() {
     }
   };
 
-  // Initialize first song when queue loads
   useEffect(() => {
     if (streamQueue.length > 0 && !currentSong && !isTransitioning) {
       handlePlayNext();
     }
   }, [streamQueue]);
 
-  // Fetch active stream and queue
   useEffect(() => {
     const fetchStream = async () => {
       await findActiveStream({
@@ -95,7 +82,6 @@ export default function MyStream() {
 
   const handleAddSong = async () => {
     if (!streamTitle.trim()) return;
-
     await addSongToStream({
       userId,
       streamTitle,
@@ -113,12 +99,6 @@ export default function MyStream() {
     if (!currentSong && !isTransitioning) {
       await handlePlayNext();
     }
-  };
-
-  const handleRemoveSong = (songIndex: number) => {
-    const newQueue = [...streamQueue];
-    newQueue.splice(songIndex, 1);
-    setStreamQueue(newQueue);
   };
 
   if (!session) {
@@ -142,6 +122,7 @@ export default function MyStream() {
       </header>
       <main className="max-w-7xl mx-auto p-6">
         <div className="flex flex-col lg:flex-row gap-6">
+
           {/* Queue Section */}
           <div className="w-full lg:w-3/5">
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -172,7 +153,7 @@ export default function MyStream() {
                       <div className="flex items-center gap-6">
                         <span className="text-emerald-500 font-medium">{song._count.upvotes}</span>
                         <Button
-                          onClick={() => handleRemoveSong(index)}
+                          onClick={() => handleRemoveSong(index , streamQueue , setStreamQueue)}
                           size="sm"
                           variant="ghost"
                           className="text-red-400 hover:text-red-300 p-2"

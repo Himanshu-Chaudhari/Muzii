@@ -11,7 +11,6 @@ export async function GET(req : NextRequest) {
                 }
             }
         })
-        // console.log(space)
         return NextResponse.json({
             space : space
         })

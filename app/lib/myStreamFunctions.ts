@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react"
 import axios from "axios"
 import { LiveSpace, StreamQueue } from "./interfaces"
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+import { headers } from "next/headers"
 
 export async function addSongToStream({
     userId , streamTitle , liveSpace , userEmail ,setStreamTitle
@@ -67,3 +68,17 @@ export async function stopStreamingStream({userId,liveSpace,router}:{userId : st
       router.push('/dashboard/createSpace')
     }
 }
+
+export const handleRemoveSong = async (songIndex: number , streamQueue : StreamQueue[] , setStreamQueue : Dispatch<SetStateAction<StreamQueue[]>>) => {
+
+  const response = axios.post('/api/streams/getSpaceSongs',{
+    headers:{
+      id : streamQueue[songIndex].id,
+      streamId : streamQueue[songIndex].spaceId
+    }
+  });
+
+  const newQueue = [...streamQueue];
+  newQueue.splice(songIndex, 1);
+  setStreamQueue(newQueue);
+};

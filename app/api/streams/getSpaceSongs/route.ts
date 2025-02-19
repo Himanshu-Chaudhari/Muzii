@@ -29,8 +29,41 @@ export async function GET(req: NextRequest) {
             streams : streams,
         });
     }catch(err){
+        console.log(err);
         return NextResponse.json({
-            err
+            message : "Server Error",
+        }, {
+            status : 500
         });    
+    }
+}
+
+export async function DELETE(req : NextRequest) {
+    const streamId = req.headers.get('streamId')
+    const id = req.headers.get('id')
+
+    if(!id || !streamId){
+        return NextResponse.json({
+            "message" : "Invalid Input"
+        })
+    }
+    try{
+        await db.stream.delete({
+            where : {
+                id : id
+            }
+        })
+        return NextResponse.json({
+            "message" : "Stream Deleted"
+        },{
+            status : 200
+        })
+    }catch(err){
+        console.log(err);
+        return NextResponse.json({
+            "message" : "Internal Server Error"
+        },{
+            status : 401
+        })
     }
 }

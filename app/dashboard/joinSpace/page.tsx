@@ -20,7 +20,6 @@ export default function JoinStream() {
   const handleJoinStream = () => {
     if (streamId.trim()) {
       console.log("Joining stream:", streamId)
-      // Here you would typically handle the logic to join the stream
       showNotification(`Attempting to join stream with ID: ${streamId}`, 'success')
       setStreamId("")
     }
